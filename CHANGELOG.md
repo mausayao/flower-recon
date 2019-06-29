@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adicionado modelo caffe model
 - Adicionado navigation controller
 - Adicionado metodo para tirar foto
+- Adicionado metedo para classificação de imagem

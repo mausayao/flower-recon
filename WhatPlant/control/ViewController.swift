@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import CoreML
+import Vision
 
 class ViewController: UIViewController {
 
@@ -22,9 +24,37 @@ class ViewController: UIViewController {
         
         imagePicker.allowsEditing = true
         imagePicker.sourceType = .camera
-        
         present(imagePicker, animated: true, completion: nil)
         
+    }
+    
+    private func detect(image: CIImage) {
+        guard let model = try? VNCoreMLModel(for: FlowersClassifiers().model) else {
+            fatalError("Load model failed.")
+        }
+        
+        let request = VNCoreMLRequest(model: model) { (req, error) in
+            if error != nil {
+                print(error.debugDescription)
+                return
+            }
+            
+            guard let reqResults = req.results as? [VNClassificationObservation] else {
+                fatalError("Error on Classifier")
+            }
+            
+            if let first = reqResults.first {
+                self.navigationItem.title = first.identifier
+            }
+        }
+        
+        let handler = VNImageRequestHandler(ciImage: image)
+        
+        do {
+            try handler.perform([request])
+        }catch{
+            print(error)
+        }
     }
     
 }
@@ -35,8 +65,14 @@ extension ViewController: UIImagePickerControllerDelegate {
         
         if let image = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             imageView.image = image
-            imagePicker.dismiss(animated: true, completion: nil)
+            
+            guard let imageEdited = CIImage(image: image) else {
+                fatalError("Error on convert image!")
+            }
+            
+            detect(image: imageEdited)
         }
+        imagePicker.dismiss(animated: true, completion: nil)
     }
     
 }
