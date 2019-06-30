@@ -15,6 +15,7 @@ import Alamofire
 class ViewController: UIViewController {
     
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var flowerInfoLabel: UILabel!
     var imagePicker = UIImagePickerController()
     let wikipidiaUrl = "https://en.wikipedia.org/w/api.php"
     
@@ -50,7 +51,6 @@ class ViewController: UIViewController {
                 fatalError("Error on Classifier image")
             }
             
-            self.navigationItem.title = first.identifier.capitalized
             self.getInfo(flowerName: first.identifier)
         }
         
@@ -78,7 +78,15 @@ class ViewController: UIViewController {
         
         Alamofire.request(wikipidiaUrl, method: .get, parameters: parameters).responseJSON { (response) in
             if response.result.isSuccess {
-                print(response)
+                let resultJson = JSON(response.result.value!)
+                let pageId = resultJson["query"]["pageids"][0].stringValue
+                
+                let flowerName = resultJson["query"]["pages"][pageId]["title"].stringValue
+                let flowerInfo = resultJson["query"]["pages"][pageId]["extract"].stringValue
+                
+                self.navigationItem.title = flowerName
+                self.flowerInfoLabel.text = flowerInfo
+                
             }
         }
     }
