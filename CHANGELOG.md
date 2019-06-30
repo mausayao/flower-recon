@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 ### Fixed
 
-## [0.1.0] 2019-06-30
+## [0.1.1] 2019-06-30
 ### Added
 - Adicionado pod SwiftyJson.
 - Adicionado pod Alamofire.
@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adicionado label para descrição da imagem classificada.
 - Ajustes do layout de tela.
 - Parse Json.
+- Adicionado pod para download de imagem.
+- Adicionado imagem de classificação da wikipedia.
 
 
 ## [0.1.0] 2019-06-29

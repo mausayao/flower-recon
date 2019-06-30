@@ -11,6 +11,7 @@ import CoreML
 import Vision
 import SwiftyJSON
 import Alamofire
+import SDWebImage
 
 class ViewController: UIViewController {
     
@@ -68,27 +69,35 @@ class ViewController: UIViewController {
         let parameters : [String: String] = [
             "format": "json",
             "action": "query",
-            "prop": "extracts",
+            "prop": "extracts|pageimages",
             "exintro": "",
             "explaintext": "",
             "titles": flowerName,
             "indexpageids": "",
-            "redirect": "1"
+            "redirects": "1",
+            "pithumbsize": "500"
         ]
         
         Alamofire.request(wikipidiaUrl, method: .get, parameters: parameters).responseJSON { (response) in
             if response.result.isSuccess {
-                let resultJson = JSON(response.result.value!)
-                let pageId = resultJson["query"]["pageids"][0].stringValue
+                let flower = self.toObject(json: JSON(response.result.value!))
                 
-                let flowerName = resultJson["query"]["pages"][pageId]["title"].stringValue
-                let flowerInfo = resultJson["query"]["pages"][pageId]["extract"].stringValue
-                
-                self.navigationItem.title = flowerName
-                self.flowerInfoLabel.text = flowerInfo
+                self.imageView.sd_setImage(with: URL(string: flower.imageUrl), completed: nil)
+                self.navigationItem.title = flower.name
+                self.flowerInfoLabel.text = flower.description
                 
             }
         }
+    }
+    
+    private func toObject(json: JSON) -> Flower {
+        let pageId = json["query"]["pageids"][0].stringValue
+        
+        let flowerName = json["query"]["pages"][pageId]["title"].stringValue
+        let flowerInfo = json["query"]["pages"][pageId]["extract"].stringValue
+        let flowerImg = json["query"]["pages"][pageId]["thumbnail"]["source"].stringValue
+        
+        return Flower(name: flowerName, description: flowerInfo, imageUrl: flowerImg)
     }
     
 }
@@ -98,8 +107,6 @@ extension ViewController: UIImagePickerControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         if let image = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
-            imageView.image = image
-            
             guard let imageEdited = CIImage(image: image) else {
                 fatalError("Error on convert image!")
             }
