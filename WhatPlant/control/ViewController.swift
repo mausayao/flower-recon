@@ -9,17 +9,20 @@
 import UIKit
 import CoreML
 import Vision
+import SwiftyJSON
+import Alamofire
 
 class ViewController: UIViewController {
-
+    
     @IBOutlet weak var imageView: UIImageView!
     var imagePicker = UIImagePickerController()
+    let wikipidiaUrl = "https://en.wikipedia.org/w/api.php"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         imagePicker.delegate = self
     }
-
+    
     @IBAction func buttonTapped(_ sender: UIBarButtonItem) {
         
         imagePicker.allowsEditing = true
@@ -43,9 +46,12 @@ class ViewController: UIViewController {
                 fatalError("Error on Classifier")
             }
             
-            if let first = reqResults.first {
-                self.navigationItem.title = first.identifier
+            guard let first = reqResults.first  else {
+                fatalError("Error on Classifier image")
             }
+            
+            self.navigationItem.title = first.identifier.capitalized
+            self.getInfo(flowerName: first.identifier)
         }
         
         let handler = VNImageRequestHandler(ciImage: image)
@@ -54,6 +60,26 @@ class ViewController: UIViewController {
             try handler.perform([request])
         }catch{
             print(error)
+        }
+    }
+    
+    private func getInfo(flowerName: String) {
+        
+        let parameters : [String: String] = [
+            "format": "json",
+            "action": "query",
+            "prop": "extracts",
+            "exintro": "",
+            "explaintext": "",
+            "titles": flowerName,
+            "indexpageids": "",
+            "redirect": "1"
+        ]
+        
+        Alamofire.request(wikipidiaUrl, method: .get, parameters: parameters).responseJSON { (response) in
+            if response.result.isSuccess {
+                print(response)
+            }
         }
     }
     
